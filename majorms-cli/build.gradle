@@ -1,0 +1,83 @@
+plugins {
+    id 'distribution'
+}
+
+
+if (!project.hasProperty('cxnHubUser') && !project.hasProperty('cxnHubPass')) {
+    // Using Gluon (ChemAxon internal) environment for dependencies
+    apply plugin: 'cxn-gluon'
+    apply plugin: 'cxn-java'
+} else {
+    // Using ChemAxon public repository Hub (available for everyone) Hub or
+    // locally downloaded JChem jar
+    apply plugin: 'java'
+}
+
+sourceCompatibility = 1.8
+
+dependencies {
+    implementation project(':majorms-lambda-example')
+}
+
+
+// Use classpath jar file to avoid crash on Windows
+// See http://tuhrig.de/gradles-bootrun-and-windows-command-length-limit/
+// Note that the manifest of the created pathing jar contains absolute pathnames so it is not portable
+task pathingJar(type: Jar) {
+    dependsOn configurations.runtime, jar  
+    archiveName = 'classpath.jar'
+    doFirst {
+        manifest {
+            attributes "Class-Path": project.configurations.runtimeClasspath.files.collect {
+                it.getName()
+            }.join(' ') + ' ' + jar.archivePath.getName()
+        }
+    }
+}
+
+// see https://discuss.gradle.org/t/usage-of-distribution-plugin/12874/9
+distributions {
+    main {
+        contents {
+            baseName = 'majorms-cli'
+            into ('lib') {
+                from jar
+                from pathingJar
+                from (project.configurations.runtimeClasspath)
+            }
+            
+        }
+    }
+}
+
+task createScripts(dependsOn: jar, description: 'Create launcher scripts for command line interfaces.') {
+    doLast {
+        def scriptsDir = file("${buildDir}/scripts/")
+        scriptsDir.deleteDir()
+        scriptsDir.mkdir()
+
+        println 'Create launcher scripts into directory ' + scriptsDir
+
+        def createScript = { name, className, jvmargs ->
+            def script = new File(scriptsDir, name)
+
+            // do not add extra 'bin' dir to the classpath
+            script.text = String.format(
+                    'java %s -classpath "%s" %s "$@"\n',
+                    jvmargs, 
+                    sourceSets.main.runtimeClasspath.asPath, 
+                    className
+            )
+            script.setExecutable(true)
+            
+            println 'Create launcher script "' + name + '" for main class "' + className + '" with JVM args: "' + jvmargs + '"'
+        }
+
+        createScript( 'run-majorms', 'com.chemaxon.calculations.cli.MajorMsCli', '-Xmx2g')
+        
+        // print class loading verbose messages during execution
+        createScript( 'run-majorms-vc', 'com.chemaxon.calculations.cli.MajorMsCli', '-Xmx2g -verbose:class')
+    }
+}
+
+

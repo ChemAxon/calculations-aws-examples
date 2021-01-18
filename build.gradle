@@ -1,0 +1,165 @@
+apply plugin: 'base'
+
+// =============================================================================
+//
+// This project can be compiled/executed against in multiple environments. See 
+// README.md for further details.
+//
+//  - ChemAxon public artifact repository (hub.chemaxon.com): credentials specified using properties
+//    "cxnHubUser" and "cxnHubPass"
+//
+//  - ChemAxon internal build environmentg (Gluon): used internally by developers of ChemAxon.
+//
+//  - Manually downloaded jchem.jar is NOT available currentl
+//
+// Configuration consistency check, write detailed configuration status to the console
+
+   
+if (project.hasProperty('cxnJchemJar')) {
+    // Some other API example projects provide this possibility, fail if specified
+
+    println ""
+    println ""
+    println "-------------------------------------------------------------------------------"
+    println ""
+    println "Property \"cxnJchemJar\" is present."
+    println ""
+    println "Using manually downloaded, locally available JChem distribution is NOT SUPPORTED."
+    println ""
+    println "-------------------------------------------------------------------------------"
+    println ""
+    println ""
+    ant.fail("Property \"cxnJchemJar\" is present; compilation against locally available JChem distribution is NOT SUPPORTED.")
+
+}  else if (project.hasProperty('cxnHubUser') || project.hasProperty('cxnHubPass')) {
+    // Open source configuration available to ChemAxon public repository (hub.chemaxon.com) users
+
+    println ""
+    println ""
+    println "-------------------------------------------------------------------------------------------"
+    println "Property \"cxnHubUser\" / \"cxnHubPass\" found."
+    println "Using ChemAxon public repository \"hub.chemaxon.com\" for accessing ChemAxon proprietary APIs"
+    println "See README.md for further details."
+    println "-------------------------------------------------------------------------------------------"
+    println ""
+
+    if (!project.hasProperty('cxnHubUser') || !project.hasProperty('cxnHubPass')) {
+        ant.fail("Both properties \"cxnHubUser\" and \"cxnHubPass\" must be definied for open source configuration.");
+    }
+    
+} else {
+    // For CXN internal use only
+    // When no further properties are defined, this mode is is selected.
+    println ""
+    println ""
+    println "---------------------------------------------------------------------------------------"
+    println ""
+    println "ChemAxon internal build environment (Gluon) will be used for compilation. See README.md"
+    println "This configuration is usable for ChemAxon employees only."
+    println ""
+    println "For typical usage specify your registered ChemAxon PASS email and HUB API key:"
+    println ""
+    println "    ./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY> ....."
+    println ""
+    println "Or specify the location of a downloaded lib/jchem.jar from a JChem distribution:"
+    println ""
+    println "    ./gradlew -PcxnJchemJar=<FILE> ....."
+    println ""
+    println "    The specified jar file location <FILE> must be relative to the root project, eg use"
+    println "    -PcxnJchemJar=../jchem/lib/jchem.jar when Jchem distribution is unpacked next to" 
+    println "    this project."
+    println ""
+    println "---------------------------------------------------------------------------------------"
+    println ""
+
+    if (!project.hasProperty('cxnRepository')) {
+        println "ERROR: ChemAxon internal build environment (Gluon) is not configured properly. See README.md"
+        println ""
+        println "Non ChemAxon employees can compile this project against ChemAxon public repository using"
+        println ""
+        println "    -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY>"
+        println ""
+
+        ant.fail("Can not resolve dependencies, see README.md and check console output.");
+    }
+
+}
+//
+// =============================================================================
+
+subprojects {
+    apply plugin: 'java'
+}
+
+allprojects {
+    // ChemAxon internale (gluon) environment requires a buildscript block
+    buildscript {
+        // see https://github.com/gradle/kotlin-dsl-samples/issues/158
+        if (!project.hasProperty('cxnHubUser') && !project.hasProperty('cxnHubPass')) {
+            repositories cxnRepository
+            dependencies.classpath "com.chemaxon:gluon-plugins:${cxnGluonSysVersion}"
+        }
+        
+    }
+    
+    if (project.hasProperty('cxnHubUser') || project.hasProperty('cxnHubPass')) {
+        // ChemAxon public repository (Hub) is used for ChemAxon proprietary and
+        // other dependencies
+        repositories {
+            maven {
+                url "${cxnHubContextUrl}/libs-release"
+                credentials {
+                    username "${cxnHubUser}"
+                    password "${cxnHubPass}"
+                }
+            }
+        }
+    } else {
+        // use ChemAxon internal environment (Gluon); this is intended for
+        // ChemAxon employees
+        repositories cxnRepository
+    }
+    
+}
+
+// see http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+}
+
+// See http://forums.gradle.org/gradle/topics/how_to_aggregate_test_reports_on_test_failures_and_still_fail_the_build
+subprojects {
+    apply plugin: 'java'
+    
+    task copyReport(type: Copy) {
+        from('build/test-results') {
+            include '*.xml' // do not want to copy and override binary results
+        }
+        into "$rootDir/build/test-results" // this is the location where Gluon expects test result XMLs
+        duplicatesStrategy = DuplicatesStrategy.FAIL
+    }
+    test.finalizedBy(copyReport)
+
+    jar {
+        manifest {
+            attributes 'Implementation-Title': 'Calculators reports'
+        }
+    }
+
+}
+
+task testReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/tests") // this is the location where Gluon expects test result XMLs
+    // Include the results from the `test` task in all subprojects
+    reportOn subprojects*.test
+}
+
+task test(dependsOn: subprojects*.test) {}
+// task check(dependsOn: subprojects*.test) {}
+
+test.finalizedBy(testReport)
+check.finalizedBy(testReport)

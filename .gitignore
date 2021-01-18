@@ -1,0 +1,8 @@
+/majorms-lambda-example/build/
+/majorms-cli/build/
+/.nb-gradle/
+/.gradle/
+/build/
+/new-includes.txt
+/out.txt
+/response.json
