@@ -47,17 +47,19 @@ To create cherry pick list for dependencies we instruct the JVM to print all loa
     -write-times true \
     -out out.txt | \
     \
-    # Keep only interested jars \
+    `# Keep only interested jars, exclude system and jars created by this project` \
     grep "\\.jar" | \
     grep -v "rt\\.jar" | \
     grep -v "jsse\\.jar" | \
     grep -v "majorms-lambda-example-.*\\.jar" | \
     \
-    # extract jar names and make unique list
+    `# extract jar names and make unique list` \
     sed -e "s/^.*\///" | sed -e "s/]$//" | sort -u > new-includes.txt
 ```
 
-The above command chain will create a `new-includes.txt` file. To use it by the build tools overwrite the contents of `includes.txt`.
+The above command chain will create a `new-includes.txt` file. To use it by the build tools overwrite the contents of `includes.txt`. Note that 
+inline comments in the multiline command above use Bash's backtick command substitution (see details of this technique 
+[here](https://stackoverflow.com/a/12797512)).
 
 
 Distribution task
