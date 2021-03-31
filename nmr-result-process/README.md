@@ -10,10 +10,18 @@ Requirements
 Python3 with `Matplotlib` is required. On Ubuntu follow <https://phoenixnap.com/kb/how-to-install-python-3-ubuntu> and 
 <https://matplotlib.org/3.3.3/users/installing.html>.
 
+
 Launch locally
 --------------
 
-Follow script creation instructions of the [`cli`](../cli/README.md) subproject, then invoke
+Follow script creation instructions of the [`cli`](../cli/README.md) subproject,
+
+
+``` bash
+./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY> :cli:createScripts
+```
+
+then invoke
 
 ``` bash
 ./cli/build/scripts/run-nmr \

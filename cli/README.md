@@ -13,7 +13,7 @@ Launcher scripts provide a quick, convenient command line entry point for the fu
 and `nmr-lambda-examples`. Scripts 
 use all declared dependencies with **no** cherry picking, referring them directly from Gradle cache. The created scripts are **not** portable.
 
-Invoke with your ChemAxon Hub credentials and with the directory containing `license.cxl` file:
+Invoke with your ChemAxon Hub credentials:
 
 ``` bash
 ./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY> :cli:createScripts
