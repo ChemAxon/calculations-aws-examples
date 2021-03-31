@@ -7,7 +7,8 @@
 # author Gabor Imre
 #
 
-import sys, json
+import sys
+import json
 
 # extract the indexes of the neighbour hydrogens from the 1H NMR result
 def get_attached_hydrogens(c_atom_index, hnmr_result):
@@ -18,7 +19,7 @@ def get_attached_hydrogens(c_atom_index, hnmr_result):
 
 
 # Convert response to a textual representation
-def response_to_text(data):
+def response_to_text_lines(data):
     ret = []
 
     # https://stackoverflow.com/a/522578
@@ -46,11 +47,24 @@ def response_to_text(data):
         ret.append("");
     
     
-    return '\n'.join(ret)
+    return ret
 
 
-# parse json input from stdin
-data = json.load(sys.stdin)
+# Lambda handler for lambda deployment
+#
+# event is an NMR lambda result
+# returns textual lines in a list
+# See https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
+def lambda_handler(event, context): 
+    return response_to_text_lines(event)
 
-print(response_to_text(data))
+
+# When executed as a script read from stdin and write to stdout
+if __name__ == "__main__":
+    # parse json input from stdin
+    data = json.load(sys.stdin)
+
+    lines=response_to_text_lines(data)
+
+    print('\n'.join(lines))
 
