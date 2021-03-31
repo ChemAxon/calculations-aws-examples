@@ -9,6 +9,8 @@
 /out.txt
 /out.sdf
 /out.jsonl
+/data.json
 /response.json
 /cli/build/
 /aws-examples-common/build/
+/python-deployment-package.zip

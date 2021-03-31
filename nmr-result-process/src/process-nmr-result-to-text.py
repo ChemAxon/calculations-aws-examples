@@ -18,7 +18,7 @@ def get_attached_hydrogens(c_atom_index, hnmr_result):
     return hydrogens
 
 
-# Convert response to a textual representation
+# Convert an nmr response to a textual representation
 def response_to_text_lines(data):
     ret = []
 
