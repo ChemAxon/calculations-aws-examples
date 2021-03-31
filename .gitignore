@@ -1,8 +1,14 @@
 /majorms-lambda-example/build/
-/majorms-cli/build/
+/nmr-lambda-example/build/
 /.nb-gradle/
 /.gradle/
 /build/
 /new-includes.txt
+/new-includes-majorms.txt
+/new-includes-nmr.txt
 /out.txt
+/out.sdf
+/out.jsonl
 /response.json
+/cli/build/
+/aws-examples-common/build/

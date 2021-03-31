@@ -1,13 +1,14 @@
 package com.chemaxon.calculations.cli;
 
+import com.chemaxon.calculations.common.ProgressObserver;
 import com.chemaxon.calculations.lambda.MajorMsCalculator;
 import com.chemaxon.calculations.lambda.MajorMsRequest;
 import com.chemaxon.calculations.lambda.MajorMsResponse;
-import com.chemaxon.calculations.common.ProgressObserver;
 import com.chemaxon.calculations.util.CloseableLineIterator;
 import com.chemaxon.calculations.util.CmdlineUtils;
 import com.chemaxon.overlap.cli.invocation.CliInvocation;
 import com.chemaxon.overlap.cli.invocation.CliInvocationEnv;
+import com.google.gson.Gson;
 import java.io.PrintStream;
 
 /**
@@ -19,10 +20,11 @@ public class MajorMsCli {
     
     private static void launch(MajorMsCliParameters p, CliInvocationEnv env) throws Exception {
         env.verboseSection(
-                "Bvsgen launched.",
+                "MajorMS CLI launched.",
                 "",
                 "    input location: " + p.in,
                 "    output:         " + p.out,
+                "    JSONL output:   " + p.jsonlOut,
                 "    pH:             " + p.ph.toString(),
                 "    maxCount:       " + (p.maxCount == null ? "read all input" : p.maxCount),
                 "    writeTimes:     " + p.writeTimes
@@ -40,6 +42,7 @@ public class MajorMsCli {
             final ProgressObserver po = env.progressObserver("Importing from " + p.in);
             final CloseableLineIterator inputLines = CmdlineUtils.lineIteratorFromLocation(p.in, true);
             final PrintStream out = CmdlineUtils.printStreamFromLocation(p.out);
+            final PrintStream jsonlOutOrNull = CmdlineUtils.printStreamFromNullableLocation(p.jsonlOut).orNull();
         ) { 
             long readCount = 0;
             while (inputLines.hasNext() && (p.maxCount == null || readCount < p.maxCount)) {
@@ -56,6 +59,13 @@ public class MajorMsCli {
                     final long startTime = System.currentTimeMillis();
                     final MajorMsResponse res = calc.handleRequest(req, null);
                     final long time = System.currentTimeMillis() - startTime;
+                    
+                    
+                    if (jsonlOutOrNull != null) {
+                        jsonlOutOrNull.println(
+                            new Gson().toJson(res)
+                        );
+                    }
                     
                     final StringBuilder outLine = new StringBuilder();
                     outLine

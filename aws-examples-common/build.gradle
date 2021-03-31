@@ -1,0 +1,33 @@
+// handle multiple environment for compilation/dependency resoulution, see
+// README.md in main project directory for details
+if (!project.hasProperty('cxnHubUser') && !project.hasProperty('cxnHubPass')) {
+    // Using Gluon (ChemAxon internal) environment for dependencies
+    apply plugin: 'cxn-gluon'
+    apply plugin: 'cxn-java'
+} else {
+    // Using ChemAxon public repository Hub (available for everyone) Hub or
+    // locally downloaded JChem jar
+    apply plugin: 'java'
+}
+
+sourceCompatibility = 1.8
+
+dependencies {
+    // Need transitive deps for cli
+    // See https://stackoverflow.com/questions/44493378/whats-the-difference-between-implementation-and-compile-in-gradle
+    
+    if (project.hasProperty('cxnHubUser') || project.hasProperty('cxnHubPass')) {
+        // ChemAxon proprietary and other dependencies fetched from Hub
+        compile "com.chemaxon:calculations:${cxnHubReleaseVersion}"
+
+    } else {
+        // ChemAxon proprietary and other dependencies fetched from ChemAxon internal (employee-only) repository
+        compile "com.chemaxon:calculations:${cxnGluonDepsVersion}"
+    }
+
+    // the following dependencies are the same for all environments 
+    compile 'com.amazonaws:aws-lambda-java-core:1.2.1'
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.hamcrest:hamcrest-all:1.3"
+}
+

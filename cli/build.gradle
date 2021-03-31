@@ -17,6 +17,8 @@ sourceCompatibility = 1.8
 
 dependencies {
     implementation project(':majorms-lambda-example')
+    implementation project(':nmr-lambda-example')
+    implementation project(':aws-examples-common')
 }
 
 
@@ -39,7 +41,7 @@ task pathingJar(type: Jar) {
 distributions {
     main {
         contents {
-            baseName = 'majorms-cli'
+            baseName = 'cli'
             into ('lib') {
                 from jar
                 from pathingJar
@@ -77,6 +79,13 @@ task createScripts(dependsOn: jar, description: 'Create launcher scripts for com
         
         // print class loading verbose messages during execution
         createScript( 'run-majorms-vc', 'com.chemaxon.calculations.cli.MajorMsCli', '-Xmx2g -verbose:class')
+
+        createScript( 'run-nmr', 'com.chemaxon.calculations.cli.NmrCli', '-Xmx2g')
+        
+        // print class loading verbose messages during execution
+        createScript( 'run-nmr-vc', 'com.chemaxon.calculations.cli.NmrCli', '-Xmx2g -verbose:class')
+    
+    
     }
 }
 

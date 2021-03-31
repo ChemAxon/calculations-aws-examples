@@ -13,18 +13,16 @@ if (!project.hasProperty('cxnHubUser') && !project.hasProperty('cxnHubPass')) {
 sourceCompatibility = 1.8
 
 dependencies {
- 
-    
     // Need transitive deps for cli
     // See https://stackoverflow.com/questions/44493378/whats-the-difference-between-implementation-and-compile-in-gradle
     
     if (project.hasProperty('cxnHubUser') || project.hasProperty('cxnHubPass')) {
         // ChemAxon proprietary and other dependencies fetched from Hub
-        compile "com.chemaxon:calculations:${cxnHubReleaseVersion}"
+        compile "com.chemaxon:calculations-nmr:${cxnHubReleaseVersion}"
 
     } else {
         // ChemAxon proprietary and other dependencies fetched from ChemAxon internal (employee-only) repository
-        compile "com.chemaxon:calculations:${cxnGluonDepsVersion}"
+        compile "com.chemaxon:calculations-nmr:${cxnGluonDepsVersion}"
     }
 
     // the following dependencies are the same for all environments 
@@ -51,11 +49,8 @@ task deploymentPackage(type: Zip) {
     classifier = 'deployment-package'
     //exclude 'annotations-2.0.1.jar'
     
-    
     // see https://stackoverflow.com/questions/20340688/reading-strings-from-a-file-and-putting-them-into-an-array-with-groovy
-    def includelist = new File("${rootProject.projectDir}/includes-majorms.txt") as String[]
-    
-    
+    def includelist = new File("${rootProject.projectDir}/includes-nmr.txt") as String[]
     
     // force the inclusion of jar built from this project (the actual lambda wrapper)
     // note that jar file name depends on project version defined in gradle.properties so it might change

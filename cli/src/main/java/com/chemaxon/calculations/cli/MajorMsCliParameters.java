@@ -42,6 +42,13 @@ public class MajorMsCliParameters {
     public String out = "-";
     
     @Parameter(
+            names = {"-jsonl-out"},
+            description = "Optipnal location for JSONL (one JSON line per structure) output."
+    )
+    public String jsonlOut = null;
+    
+    
+    @Parameter(
            names = {"-max-count"},
            description = "Max structure count to read"
     )

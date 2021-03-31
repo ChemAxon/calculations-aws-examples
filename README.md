@@ -4,7 +4,7 @@ ChemAxon Calculators AWS code examples
 
 This repository contains a **proof of concept** example of using ChemAxon calculators as AWS Lambda functions.
 
-Details:
+Notes:
 
  - The current ChemAxon Java API distribution is a monolithic; no subset / module selection    is supported. This project demonstrates a way to cherry
    pick the required jars for a limited set of functionalities. Further minimization of the cherry picked jars is not implemented.
@@ -13,6 +13,8 @@ Details:
    network. The license file can also be read from the classpath, baking it into the AWS lambda distribution package is also demonstrated. Contact us
    to acquire evaluation / production license.
    
+ - The current examples provide batch processing capability but no granular error handling: in case of an error the whole batch is rejected. Finer
+   and customizable error handling can be expected later.
 
 **NOTE**: If you have any question, suggestion please feel free to contact us at 
 [`calculators-support@chemaxon.com`](mailto:calculators-support@chemaxon.com)
@@ -50,8 +52,11 @@ Version of ChemAxon proprietary dependencies (for both environments) are specifi
 Example projects
 ----------------
 
-- [Major microspecies calculation as AWS Lambda](./majorms-lambda-example/README.md) Creates cherry picked deployment package
-- [Command line interface](./majorms-cli/README.md) Launch exposed calculation locally, determine jars to be cherry picked
+- [Major microspecies calculation as AWS Lambda](./majorms-lambda-example/README.md) Creates cherry picked deployment package for Major Microspecies
+- [NMR calculation as AWS Lambda](./nmr-lambda-example/README.md) Creates cherry picked deployment package for NMR
+- [Command line interfaces](./cli/README.md) Launch exposed calculations locally, determine jars to be cherry picked for AWS Lambda deployment 
+  packages
+
 
 
 Create AWS Lambda deployment package
