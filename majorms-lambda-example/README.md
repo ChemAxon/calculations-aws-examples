@@ -69,8 +69,14 @@ Test
 ----
 
 
-See [`com.chemaxon.calculations.lambda.MajorMsRequest`](src/main/java/com/chemaxon/calculations/lambda/MajorMsRequest.java) for details on request format. As an 
-example you can use the following test data from Lambda console:
+See 
+
+ - [`com.chemaxon.calculations.lambda.MajorMsRequest`](src/main/java/com/chemaxon/calculations/lambda/MajorMsRequest.java) for details on request 
+   format.
+ - [`com.chemaxon.calculations.lambda.MajorMsResponse`](src/main/java/com/chemaxon/calculations/lambda/MajorMsResponse.java) for details on response 
+   format.
+
+As an example you can use the following test data from Lambda console:
 
 ``` json
 {
