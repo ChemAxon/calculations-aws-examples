@@ -72,7 +72,8 @@ Test
 See 
 
  - [`com.chemaxon.calculations.lambda.NmrRequest`](src/main/java/com/chemaxon/calculations/lambda/NmrRequest.java) for details on request format. 
- - [`com.chemaxon.calculations.lambda.NmrResponse`](src/main/java/com/chemaxon/calculations/lambda/NmrResponse.java) for details on response format. 
+ - [`com.chemaxon.calculations.lambda.NmrResponse`](src/main/java/com/chemaxon/calculations/lambda/NmrResponse.java) and 
+   [`com.chemaxon.calculations.lambda.NmrResult`](src/main/java/com/chemaxon/calculations/lambda/NmrResult.java) for details on response format. 
 
 
 As an example you can use the following test data from Lambda console:
