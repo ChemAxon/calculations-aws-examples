@@ -69,7 +69,7 @@ Test
 ----
 
 
-See [`com.chemaxon.calculators.NmrRequest`](src/main/java/com/chemaxon/calculators/NmrRequest.java) for details on request format. As an example you 
+See [`com.chemaxon.calculations.lambda.NmrRequest`](src/main/java/com/chemaxon/calculations/lambda/NmrRequest.java) for details on request format. As an example you 
 can use the following test data from Lambda console:
 
 ``` json

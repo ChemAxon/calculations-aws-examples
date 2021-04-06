@@ -69,7 +69,7 @@ Test
 ----
 
 
-See [`com.chemaxon.calculators.MajorMsRequest`](src/main/java/com/chemaxon/calculators/MajorMsRequest.java) for details on request format. As an 
+See [`com.chemaxon.calculations.lambda.MajorMsRequest`](src/main/java/com/chemaxon/calculations/lambda/MajorMsRequest.java) for details on request format. As an 
 example you can use the following test data from Lambda console:
 
 ``` json
