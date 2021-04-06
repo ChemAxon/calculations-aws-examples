@@ -69,7 +69,8 @@ Test
 ----
 
 
-See `com.chemaxon.calculators.MajorMsRequest` for details on request format. As an example you can use the following test data from Lambda console:
+See [`com.chemaxon.calculators.MajorMsRequest`](src/main/java/com/chemaxon/calculators/MajorMsRequest.java) for details on request format. As an 
+example you can use the following test data from Lambda console:
 
 ``` json
 {
@@ -99,6 +100,21 @@ aws lambda invoke \
 
 # Pretty print response
 cat response.json | python -m json.tool
+
+```
+
+The response printed:
+
+``` json
+{
+    "resultSmiles": [
+        "CCCC",
+        "CCCCONC",
+        "CCCCOCC",
+        "COCCOCOCOC",
+        "C1C[NH2+]CCOC1"
+    ]
+}
 
 ```
 

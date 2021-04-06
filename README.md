@@ -29,7 +29,8 @@ Prerequisites
   * Linux shell or equivalent (WSL, Cygwin)
   * Make sure that you have a Chemaxon Pass account (register [here](https://accounts.chemaxon.com/register)) and you acquire your ChemAxon Hub public
     repository API key (visit <https://accounts.chemaxon.com/settings>). 
-
+  * For pretty printing JSON responses of lambda invocations Python.
+  * For local execution of NMR spectrum post process demo (see `nmr-result-process/`) Python3 and optionally `matplotlib`.
 
 Dependencies
 ------------
@@ -54,9 +55,11 @@ Example projects
 
 - [Major microspecies calculation as AWS Lambda](./majorms-lambda-example/README.md) Creates cherry picked deployment package for Major Microspecies
 - [NMR calculation as AWS Lambda](./nmr-lambda-example/README.md) Creates cherry picked deployment package for NMR
+- [Process NMR results](./nmr-result-process/README.md) Python based example lambda to further post process NMR prediction results
 - [Command line interfaces](./cli/README.md) Launch exposed calculations locally, determine jars to be cherry picked for AWS Lambda deployment 
   packages
 
+See subprojects for detailed lambda deployment, invocation and input/output descriptions.
 
 
 Create AWS Lambda deployment package
@@ -66,14 +69,18 @@ Invoke with your ChemAxon Hub credentials and with the directory containing `lic
 
 ``` bash
 ./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY> -PcxnLicenseDir=<LICENSE_DIR> :majorms-lambda-example:deploymentPackage
+./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY> -PcxnLicenseDir=<LICENSE_DIR> :nmr-lambda-example:deploymentPackage
 ```
 
 Make sure the referenced `license.cxl` has proper read permissions (call `chmod 664 <LICENSE_DIR>/license.cxl`).
 
-Deployment package is created in `majorms-lambda-example/build/distributions/majorms-lambda-example-<VERSION>-deployment-package.zip`. Deployment
-package will contain only the cherry picked dependencies specified in file `includes.txt`. Deployment package size is around 8.1 MB.
+Deployment packages are created in `majorms-lambda-example/build/distributions/majorms-lambda-example-<VERSION>-deployment-package.zip` and
+in `nmr-lambda-example/build/distributions/nmr-lambda-example-<VERSION>-deployment-package.zip`. Deployment
+packages will contain only the cherry picked dependencies specified in file `includes-majorms.txt` and `includes-nmr.txt`. Deployment package size are
+around 8.1 MB and 27 MB.
 
-See `majorms-lambda-example/README.md` for details.
+See [`majorms-lambda-example/README.md`](majorms-lambda-example/README.md) and [`nmr-lambda-example/README.md`](nmr-lambda-example/README.md) 
+for details.
 
 
 Create launcher scripts for local execution
@@ -82,20 +89,36 @@ Create launcher scripts for local execution
 Invoke with your ChemAxon Hub credentials:
 
 ``` bash
-./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY> :majorms-cli:createScripts
+./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY> :cli:createScripts
 ```
 
-Launcher scripts are generated into `majorms-cli/build/scripts/`. Launch them:
+Launcher scripts are generated into `cli/build/scripts/`. Launch them:
 
 ``` bash
 # print command line help
-./majorms-cli/build/scripts/run-majorms -h
+./cli/build/scripts/run-majorms -h
+./cli/build/scripts/run-nmr -h
 
-# launch calculation for SMILES input
-./majorms-cli/build/scripts/run-majorms -in molecules.smi.gz -write-times true -out out.txt
+# launch calculations for SMILES input
+# note that gzipped input is recognized
+./cli/build/scripts/run-majorms \
+    -in molecules.smi.gz \
+    -write-times true \
+    -out out.txt \
+    -jsonl-out out.jsonl
+
+./cli/build/scripts/run-nmr \
+    -in molecules.smi.gz \
+    -in-format smiles \
+    -write-times true \
+    -out out.txt \
+    -sdf-out out.sdf \
+    -jsonl-out out.jsonl \
+    -max-count 5
 ```
 
-See `majorms-cli/README.md` for details on further use cases and on creating dependency cherry picking list.
+See [`cli/README.md`](cli/README.md) for details on further use cases and on creating dependency cherry picking lists.
+
 
 
 Licensing

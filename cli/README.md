@@ -30,7 +30,8 @@ Launcher scripts will be generated into `cli/build/scripts`. Invocation examples
 # note that gzipped input is recognized
 ./cli/build/scripts/run-majorms \
     -in molecules.smi.gz \
-    -write-times true -out out.txt \
+    -write-times true \
+    -out out.txt \
     -jsonl-out out.jsonl
 
 ./cli/build/scripts/run-nmr \
