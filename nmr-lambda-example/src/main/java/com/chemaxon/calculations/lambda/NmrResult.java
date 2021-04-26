@@ -38,10 +38,11 @@ public class NmrResult {
      * 1H NMR shifts.
      */
     public List<HnmrShift> hnmrResult;
-
+    
     public static class CnmrShift {
         public int atomIndex;
         public double shift;
+        public double shiftError;
         public int bondCount;
         public int hCount;
     }
@@ -49,6 +50,7 @@ public class NmrResult {
     public static class HnmrShift {
         public int atomIndex;
         public double shift;
+        public double shiftError;
         public int attachedAtomIndex;
         public int attachedAtomNumber;
     }
@@ -72,7 +74,7 @@ public class NmrResult {
                 final CnmrShift shift = this.cnmrResult.get(i);
                 m.setProperty(
                     "cnmr-shift-" + i, 
-                    "atomIndex: " + shift.atomIndex + ", shift: " + shift.shift + ", bondCount: " + shift.bondCount + ", hCount: " + shift.hCount
+                    "atomIndex: " + shift.atomIndex + ", shift: " + shift.shift + ", shiftError: " + shift.shiftError + ", bondCount: " + shift.bondCount + ", hCount: " + shift.hCount
                 );
             }
         }
@@ -82,7 +84,7 @@ public class NmrResult {
                 final HnmrShift shift = this.hnmrResult.get(i);
                 m.setProperty(
                     "hnmr-shift-" + i, 
-                    "atomIndex: " + shift.atomIndex + ", shift: " + shift.shift + ", attachedAtomIndex: " + shift.attachedAtomIndex + ", attachedAtomNumber: " + shift.attachedAtomNumber
+                    "atomIndex: " + shift.atomIndex + ", shift: " + shift.shift + ", shiftError: " + shift.shiftError +  ", attachedAtomIndex: " + shift.attachedAtomIndex + ", attachedAtomNumber: " + shift.attachedAtomNumber
                 );
             }
         }

@@ -83,7 +83,7 @@ public class NmrCalculator implements RequestHandler<NmrRequest, NmrResponse> {
             CnmrShift cs = new CnmrShift();
             cs.atomIndex = shift.getAtomIndex();
             cs.shift = shift.getShift();
-
+            cs.shiftError = shift.getShiftError();
             MolAtom atom = nmrMolecule.getAtom(shift.getAtomIndex());
             cs.bondCount = atom.getBondCount() + atom.getImplicitHcount();
             cs.hCount = atom.getExplicitHcount() + atom.getImplicitHcount();
@@ -106,7 +106,7 @@ public class NmrCalculator implements RequestHandler<NmrRequest, NmrResponse> {
             HnmrShift hs = new HnmrShift();
             hs.atomIndex = shift.getAtomIndex();
             hs.shift = shift.getShift();
-
+            hs.shiftError = shift.getShiftError();
             MolAtom attachedAtom = nmrMolecule.getAtom(shift.getAtomIndex()).getLigand(0);
             hs.attachedAtomIndex = nmrMolecule.indexOf(attachedAtom);
             hs.attachedAtomNumber = attachedAtom.getAtno();

@@ -27,21 +27,17 @@ def response_to_text_lines(data):
 
         ret.append("Structure #{}".format(index))
         ret.append("    13C NMR result:")
-        ret.append("    Atom      Shift         Hydrogens")
+        ret.append("    Atom      Shift     Shift Error    Hydrogens")
 
-        cshifts = []
         for r in d["cnmrResult"]:
-            cshifts.append(r["shift"])
-            ret.append("    {:2}        {:6.2f}        {}".format(r["atomIndex"], r["shift"], get_attached_hydrogens(r["atomIndex"], d["hnmrResult"])))
+            ret.append("    {:2}        {:6.2f}     {:6.2f}        {}".format(r["atomIndex"], r["shift"], r["shiftError"], get_attached_hydrogens(r["atomIndex"], d["hnmrResult"])))
 
         ret.append("")
 
         ret.append("    1H NMR result:")
-        ret.append("    Atom      Shift")
-        hshifts = []
+        ret.append("    Atom      Shift      Shift Error")
         for r in d["hnmrResult"]:
-            hshifts.append(r["shift"])
-            ret.append("    {:2}        {:6.2f}".format(r["atomIndex"], r["shift"]))
+            ret.append("    {:2}        {:6.2f}      {:6.2f}".format(r["atomIndex"], r["shift"], r["shiftError"]))
 
 
         ret.append("");
