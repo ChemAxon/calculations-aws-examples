@@ -46,6 +46,12 @@ public class NmrCalculator implements RequestHandler<NmrRequest, NmrResponse> {
                     () -> "structure " + idx + " (0-based)"
             );
             
+            // Expand and ungroup all S-groups
+            // The calculation will invoke SDF export where the presence of
+            // S-groups cause a call into libraries excluded during the cherry
+            // picking process
+            molecule.ungroupSgroups();
+            
             // calculate C and H NMR spectra
             // Note that H NMR calculation uses its own hydrogenization
             NMRSpectrum hnmr = calculateNmrSpectrum(

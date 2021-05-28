@@ -11,6 +11,7 @@
 /out.jsonl
 /data.json
 /response.json
+/req-with-sg.json
 /cli/build/
 /aws-examples-common/build/
 /python-deployment-package.zip

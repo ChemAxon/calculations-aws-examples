@@ -238,6 +238,103 @@ The response printed:
 }
 ```
 
+Notes on S-groups
+-----------------
+
+S-groups in input molecule are removed using `chemaxon.struc.Molecule.ungroupSgroups()` function call. The
+structure in the response will not contain such features. To demonstrate this behavior see 
+
+``` bash
+# Compose a valid request JSON from a shipped structure
+echo '{ "structureSources" : [ "'"$(cat nmr-lambda-example/src/test/resources/having_sgroup.sdf | 
+    sed -z 's/\n/\\n/g')"'" ], "format" : "sdf" }'  > req-with-sg.json
+
+# Pretty print composed request
+cat req-with-sg.json | python -m json.tool
+```
+
+The composed request:
+
+```
+{
+    "format": "sdf",
+    "structureSources": [
+        "\n  Mrv2109 05282118022D          \n\n  4  3  0  0  0  0            999 V2000\n   -6.7444    7.2632    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.9264    7.3708    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.1295    7.1573    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.5139    8.0853    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  2  0  0  0  0\n  2  4  1  0  0  0  0\nM  STY  1   1 SUP\nM  SAL   1  3   2   3   4\nM  SBL   1  1   1\nM  SMT   1 cooh\nM  SAP   1  1   2   1  1\nM  SDS EXP  1   1\nM  END\n$$$$\n"
+    ]
+}
+```
+
+Invoke lambda:
+
+```
+aws lambda invoke \
+   --function-name calc-nmr-example \
+   --payload file://req-with-sg.json \
+   --cli-binary-format raw-in-base64-out \
+   response.json
+
+# Pretty print response
+cat response.json | python -m json.tool
+```
+
+The response:
+
+```
+{
+    "results": [
+        {
+            "cnmrResult": [
+                {
+                    "atomIndex": 0,
+                    "bondCount": 4,
+                    "hCount": 3,
+                    "shift": 20.6525,
+                    "shiftError": 0.24019089630264176
+                },
+                {
+                    "atomIndex": 1,
+                    "bondCount": 3,
+                    "hCount": 0,
+                    "shift": 176.4475,
+                    "shiftError": 0.7162576352123576
+                }
+            ],
+            "format": "sdf",
+            "hnmrResult": [
+                {
+                    "atomIndex": 4,
+                    "attachedAtomIndex": 0,
+                    "attachedAtomNumber": 6,
+                    "shift": 1.9644000000000004,
+                    "shiftError": 0.17229045243425423
+                },
+                {
+                    "atomIndex": 5,
+                    "attachedAtomIndex": 0,
+                    "attachedAtomNumber": 6,
+                    "shift": 1.9644000000000004,
+                    "shiftError": 0.17229045243425423
+                },
+                {
+                    "atomIndex": 6,
+                    "attachedAtomIndex": 0,
+                    "attachedAtomNumber": 6,
+                    "shift": 1.9644000000000004,
+                    "shiftError": 0.17229045243425423
+                },
+                {
+                    "atomIndex": 7,
+                    "attachedAtomIndex": 3,
+                    "attachedAtomNumber": 8,
+                    "shift": 11.42,
+                    "shiftError": 0.0
+                }
+            ],
+            "molecule": "\n  Mrv2021 05282117272D          \n\n  8  7  0  0  0  0            999 V2000\n   -6.7444    7.2632    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.9264    7.3708    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.1295    7.1573    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.5139    8.0853    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.8520    8.0812    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.5624    7.1556    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6368    6.4452    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6889    8.0853    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  2  0  0  0  0\n  2  4  1  0  0  0  0\n  1  5  1  0  0  0  0\n  1  6  1  0  0  0  0\n  1  7  1  0  0  0  0\n  4  8  1  0  0  0  0\nM  END\n$$$$\n"
+        }
+    ]
+}
+```
 
 Notes on capacity planning
 --------------------------
