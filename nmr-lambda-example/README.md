@@ -55,7 +55,7 @@ aws lambda create-function \
   --timeout 60 \
   --memory-size 512 \
   --publish \
-  --zip-file fileb://nmr-lambda-example/build/distributions/nmr-lambda-example-0.0.1-deployment-package.zip
+  --zip-file fileb://nmr-lambda-example/build/distributions/nmr-lambda-example-0.0.2-deployment-package.zip
 ```
 
 To delete the created function use (see <https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/delete-function.html>):
