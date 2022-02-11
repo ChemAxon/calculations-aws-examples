@@ -18,23 +18,32 @@ public class MsDistrRequest {
     /**
      * Calculates the microspecies distribution at this pH.
      */
-    public List<Double> pH;
+    public double pH = 7.4;
 
     /**
      * Consider tautomerization and resonance.
      */
-    public boolean tautomerize;
+    public boolean tautomerize = false;
+
+    /**
+     * Temperature in Kelvin.
+     */
+    public double temperature = 298.0;
 
     /**
      * Convenience factory for a single structure - pH pair.
      * 
      * @param smiles Input structure
      * @param pH pH to use
+     * @param tautomerize consider tautomerization/resonance
+     * @param temperature temperature in Kelvin
      * @return Created instance
      */
-    public static MsDistrRequest ofSingle(String smiles, double pH, boolean tautomerize) {
+    public static MsDistrRequest ofSingle(String smiles, double pH, boolean tautomerize, double temperature) {
         final MsDistrRequest ret = new MsDistrRequest();
-        ret.pH = ImmutableList.of(pH);
+        ret.pH = pH;
+        ret.tautomerize = tautomerize;
+        ret.temperature = temperature;
         ret.smiles = ImmutableList.of(smiles);
         return ret;
     }

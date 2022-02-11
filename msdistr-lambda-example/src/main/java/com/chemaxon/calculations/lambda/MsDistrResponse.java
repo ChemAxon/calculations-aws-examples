@@ -9,6 +9,12 @@ import java.util.List;
  */
 public class MsDistrResponse {
 
+    public double pH;
+
+    public boolean tautomerize;
+
+    public double temperature;
+
     /**
      * Results for input structures.
      */

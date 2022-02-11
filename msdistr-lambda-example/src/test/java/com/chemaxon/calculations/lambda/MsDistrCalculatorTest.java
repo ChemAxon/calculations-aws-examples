@@ -14,7 +14,9 @@ public class MsDistrCalculatorTest {
     public void test() {
         final MsDistrRequest request = MsDistrRequest.ofSingle(
             "CC(=O)OC1=CC=CC=C1C(O)=O", // aspirin
-            7.4
+            7.4,
+            false,
+            298.0
         );
 
         final MsDistrCalculator handler = new MsDistrCalculator();

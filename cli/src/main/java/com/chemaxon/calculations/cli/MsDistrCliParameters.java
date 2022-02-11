@@ -2,8 +2,6 @@ package com.chemaxon.calculations.cli;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Parameters for {@link MsDistrCli}.
@@ -21,13 +19,18 @@ public class MsDistrCliParameters {
     @Parameter(
             names = { "-ph" },
             variableArity = true,
-            description = "pH value(s) to use for all input structures. Multiple values can be specified.")
-    public List<Double> ph = new ArrayList<>();
+            description = "pH value to use for all input structures.")
+    public double ph = 7.4;
 
     @Parameter(
             names = { "-tautomerize" },
             description = "Consoder tautomerization and resonance.")
     public boolean tautomerize = false;
+
+    @Parameter(
+            names = { "-temperature" },
+            description = "Temperature in Kelvin.")
+    public double temperature = 298.0;
 
     @Parameter(
             names = { "-in" },
@@ -60,10 +63,6 @@ public class MsDistrCliParameters {
             names = { "-v" },
             description = "Be more verbose")
     public boolean verbose = false;
-
-    public MsDistrCliParameters() {
-        this.ph.add(7.4);
-    }
 
     public static String getCliHelp() {
         final JCommander jc = new JCommander(new MsDistrCliParameters());

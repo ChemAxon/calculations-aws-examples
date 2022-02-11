@@ -22,25 +22,21 @@ public class MsDistrCalculator implements RequestHandler<MsDistrRequest, MsDistr
     public MsDistrResponse handleRequest(MsDistrRequest request, Context context) {
 
         Preconditions.checkNotNull(request);
-        if (request.pH == null || request.pH.isEmpty()) {
-            throw new IllegalArgumentException("No pH specified.");
-        }
         if (request.smiles == null || request.smiles.isEmpty()) {
             throw new IllegalArgumentException("No input structure specified");
         }
 
         final MsDistrResponse ret = new MsDistrResponse();
+        ret.pH = request.pH;
+        ret.tautomerize = request.tautomerize;
+        ret.temperature = request.temperature;
         ret.results = new ArrayList<>();
 
         for (int i = 0; i < request.smiles.size(); i++) {
             final String smiles = request.smiles.get(i);
 
-            for (int j = 0; j < request.pH.size(); j++) {
-                final double pH = request.pH.get(j);
-
-                // TODO: add logging - context.getLogger()
-                ret.results.add(calculateMsDistr(smiles, pH, request.tautomerize));
-            }
+            // TODO: add logging - context.getLogger()
+            ret.results.add(calculateMsDistr(smiles, request.pH, request.tautomerize, request.temperature));
         }
 
         return ret;
@@ -49,17 +45,16 @@ public class MsDistrCalculator implements RequestHandler<MsDistrRequest, MsDistr
     /**
      * Calculates the microspecies distribution of the molecule at the specified pH.
      */
-    private MsDistrResult calculateMsDistr(String smiles, final double pH, final boolean tautomerize) {
+    private MsDistrResult calculateMsDistr(String smiles, double pH, boolean tautomerize, double temperature) {
         try {
             MsDistrResult result = new MsDistrResult();
             result.input = smiles;
-            result.pH = pH;
-            result.tautomerize = tautomerize;
             result.microspecies = new ArrayList<>();
 
             pKaPlugin plugin = new pKaPlugin();
             plugin.setpH(pH);
             plugin.setConsiderTautomerization(tautomerize);
+            plugin.setTemperature(temperature);
             plugin.setMolecule(Smiles.asCxnMolecule(smiles));
             plugin.run();
 

@@ -14,6 +14,7 @@ import java.io.PrintStream;
 /**
  * Command line entry point.
  *
+ * @author Laszlo Antal
  * @author Gabor Imre
  */
 public class MsDistrCli {
@@ -25,8 +26,9 @@ public class MsDistrCli {
                 "    input location: " + p.in,
                 "    output:         " + p.out,
                 "    JSONL output:   " + p.jsonlOut,
-                "    pH:             " + p.ph.toString(),
+                "    pH:             " + p.ph,
                 "    tautomerize:    " + p.tautomerize,
+                "    temperature:    " + p.temperature,
                 "    maxCount:       " + (p.maxCount == null ? "read all input" : p.maxCount),
                 "    writeTimes:     " + p.writeTimes);
 
@@ -41,6 +43,7 @@ public class MsDistrCli {
                 final CloseableLineIterator inputLines = CmdlineUtils.lineIteratorFromLocation(p.in, true);
                 final PrintStream out = CmdlineUtils.printStreamFromLocation(p.out);
                 final PrintStream jsonlOutOrNull = CmdlineUtils.printStreamFromNullableLocation(p.jsonlOut).orNull();) {
+
             long readCount = 0;
             while (inputLines.hasNext() && (p.maxCount == null || readCount < p.maxCount)) {
                 final String nextInLine = inputLines.next();
@@ -50,33 +53,29 @@ public class MsDistrCli {
                     env.verbose("Structure # " + readCount + ": " + nextInLine);
                 }
 
-                for (double pH : p.ph) {
-                    final MsDistrRequest req = MsDistrRequest.ofSingle(nextInLine, pH, p.tautomerize);
+                final MsDistrRequest req = MsDistrRequest.ofSingle(nextInLine, p.ph, p.tautomerize, p.temperature);
 
-                    final long startTime = System.currentTimeMillis();
-                    final MsDistrResponse res = calc.handleRequest(req, null);
-                    final long time = System.currentTimeMillis() - startTime;
+                final long startTime = System.currentTimeMillis();
+                final MsDistrResponse res = calc.handleRequest(req, null);
+                final long time = System.currentTimeMillis() - startTime;
 
-                    if (jsonlOutOrNull != null) {
-                        jsonlOutOrNull.println(
-                                new Gson().toJson(res));
-                    }
-
-                    final StringBuilder outLine = new StringBuilder();
-                    outLine
-                            .append(nextInLine)
-                            .append("\t")
-                            .append(pH)
-                            .append("\t")
-                            .append(res.results.get(0).microspecies);
-
-                    if (p.writeTimes) {
-                        outLine.append("\t").append(time);
-                    }
-                    out.println(outLine.toString());
-
-                    po.worked(1);
+                if (jsonlOutOrNull != null) {
+                    jsonlOutOrNull.println(
+                            new Gson().toJson(res));
                 }
+
+                final StringBuilder outLine = new StringBuilder();
+                outLine
+                        .append(nextInLine)
+                        .append("\t")
+                        .append(res.results.get(0).microspecies);
+
+                if (p.writeTimes) {
+                    outLine.append("\t").append(time);
+                }
+                out.println(outLine.toString());
+
+                po.worked(1);
 
             }
         }
