@@ -55,7 +55,7 @@ aws lambda create-function \
   --timeout 60 \
   --memory-size 512 \
   --publish \
-  --zip-file fileb://msdistr-lambda-example/build/distributions/msdistr-lambda-example-0.0.2-deployment-package.zip
+  --zip-file fileb://msdistr-lambda-example/build/distributions/msdistr-lambda-example-0.0.3-deployment-package.zip
 ```
 
 To delete the created function use (see <https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/delete-function.html>):
@@ -84,10 +84,9 @@ As an example you can use the following test data from Lambda console:
         "CC(=O)OC1=CC=CC=C1C(O)=O",
         "CC(=O)NC1=CC=C(O)C=C1"
     ],
-    "pH": [
-        7.4
-    ],
-    "tautomerize": false
+    "pH": 7.4,
+    "tautomerize": false,
+    "temperature": 298.0
 }
 ```
 
@@ -98,7 +97,7 @@ See <https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/i
 ``` bash
 aws lambda invoke \
    --function-name calc-msdistr-example \
-   --payload '{"smiles":["CC(=O)OC1=CC=CC=C1C(O)=O","CC(=O)NC1=CC=C(O)C=C1"],"pH":[7.4],"tautomerize":false}' \
+   --payload '{"smiles":["CC(=O)OC1=CC=CC=C1C(O)=O","CC(=O)NC1=CC=C(O)C=C1"],"pH":[7.4],"tautomerize":false,"temperature":298.0}' \
    --cli-binary-format raw-in-base64-out \
    response.json
 
