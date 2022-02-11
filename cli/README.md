@@ -1,16 +1,16 @@
-CLI for majorms lambda / nmr lambda
-===================================
+CLI majorms / msdistr / nmr lambda
+==================================
 
 
-Command line interface to invoke majorms / nmr lambda calculation locally. This project is used to collect dependencies
+Command line interface to invoke majorms / msdistr / nmr lambda calculation locally. This project is used to collect dependencies
 to be included in the deployment package.
 
 
 Launcher scripts
 ----------------
 
-Launcher scripts provide a quick, convenient command line entry point for the functionality exposed by subprojects `majorms-lambda-example`
-and `nmr-lambda-examples`. Scripts 
+Launcher scripts provide a quick, convenient command line entry point for the functionality exposed by subprojects `majorms-lambda-example`,
+`msdistr-lambda-example` and `nmr-lambda-examples`. Scripts 
 use all declared dependencies with **no** cherry picking, referring them directly from Gradle cache. The created scripts are **not** portable.
 
 Invoke with your ChemAxon Hub credentials:
@@ -24,11 +24,18 @@ Launcher scripts will be generated into `cli/build/scripts`. Invocation examples
 ``` bash
 # print command line help
 ./cli/build/scripts/run-majorms -h
+./cli/build/scripts/run-msdistr -h
 ./cli/build/scripts/run-nmr -h
 
 # launch calculation for SMILES input
 # note that gzipped input is recognized
 ./cli/build/scripts/run-majorms \
+    -in molecules.smi.gz \
+    -write-times true \
+    -out out.txt \
+    -jsonl-out out.jsonl
+
+/cli/build/scripts/run-majorms \
     -in molecules.smi.gz \
     -write-times true \
     -out out.txt \
@@ -46,6 +53,7 @@ Launcher scripts will be generated into `cli/build/scripts`. Invocation examples
 # launch calculation for SMILES input
 # This script passes JVM option `-verbose:class` to print loaded classes to standard output
 ./cli/build/scripts/run-majorms-vc -in molecules.smi.gz -write-times true -out out.txt
+./cli/build/scripts/run-msdistr-vc -in molecules.smi.gz -write-times true -out out.txt
 ./cli/build/scripts/run-nmr-vc -in molecules.smi.gz -in-format smiles -write-times true -out out.txt -sdf-out out.sdf
 
 ```
@@ -56,7 +64,7 @@ Create cherry pick list
 
 The AWS Lambda deployment package creators use 
 To create cherry pick list for dependencies we instruct the JVM to print all loaded classes and collect the affected jar files. System libraries
-(`rt.jar`, `jsse.jar`) and the libraries created by `majorms-lambda-example` and `nmr-lambda-example` subprojects are excluded.
+(`rt.jar`, `jsse.jar`) and the libraries created by `majorms-lambda-example`, `msdistr-lambda-example` and `nmr-lambda-example` subprojects are excluded.
 
 ``` bash
 # Collect cherry pick list for majorms calculation
@@ -71,10 +79,30 @@ To create cherry pick list for dependencies we instruct the JVM to print all loa
     grep -v "rt\\.jar" | \
     grep -v "jsse\\.jar" | \
     grep -v "majorms-lambda-example-.*\\.jar" | \
+    grep -v "msdistr-lambda-example-.*\\.jar" | \
     grep -v "nmr-lambda-example-.*\\.jar" | \
     \
     `# extract jar names and make unique list` \
     sed -e "s/^.*\///" | sed -e "s/]$//" | sort -u > new-includes-majorms.txt
+
+
+    # Collect cherry pick list for msdistr calculation
+    # Note that we do not write JSONL output in order to avoid GSON library to be in the result list
+    ./cli/build/scripts/run-msdistr-vc \
+        -in molecules.smi.gz \
+        -write-times true \
+        -out out.txt | \
+        \
+        `# Keep only interested jars, exclude system and jars created by this project` \
+        grep "\\.jar" | \
+        grep -v "rt\\.jar" | \
+        grep -v "jsse\\.jar" | \
+        grep -v "majorms-lambda-example-.*\\.jar" | \
+        grep -v "msdistr-lambda-example-.*\\.jar" | \
+        grep -v "nmr-lambda-example-.*\\.jar" | \
+        \
+        `# extract jar names and make unique list` \
+        sed -e "s/^.*\///" | sed -e "s/]$//" | sort -u > new-includes-msdistr.txt
 
 
 # Collect cherry pick list for nmr calculation
@@ -93,6 +121,7 @@ To create cherry pick list for dependencies we instruct the JVM to print all loa
     grep -v "rt\\.jar" | \
     grep -v "jsse\\.jar" | \
     grep -v "majorms-lambda-example-.*\\.jar" | \
+    grep -v "msdistr-lambda-example-.*\\.jar" | \
     grep -v "nmr-lambda-example-.*\\.jar" | \
     \
     `# extract jar names and make unique list` \
@@ -120,6 +149,7 @@ The resulting `cli/build/install/cli/lib/` is portable. To launch the command li
 
 ``` bash
 java -cp cli/build/install/cli/lib/classpath.jar com.chemaxon.calculations.cli.MajorMsCli -h
+java -cp cli/build/install/cli/lib/classpath.jar com.chemaxon.calculations.cli.MsDistrCli -h
 java -cp cli/build/install/cli/lib/classpath.jar com.chemaxon.calculations.cli.NmrCli -h
 ```
 
