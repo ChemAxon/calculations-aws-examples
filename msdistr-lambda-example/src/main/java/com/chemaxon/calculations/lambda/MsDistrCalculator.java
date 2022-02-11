@@ -1,6 +1,10 @@
 package com.chemaxon.calculations.lambda;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+import org.apache.commons.math3.util.Precision;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -61,9 +65,14 @@ public class MsDistrCalculator implements RequestHandler<MsDistrRequest, MsDistr
             for (int i = 0; i < plugin.getMsCount(); i++) {
                 double msDistr = plugin.getMsDistribution(i)[0];
                 if (msDistr > 0.01) {
-                    result.microspecies.add(Ms.of(Smiles.fromCxnMolecule(plugin.getMsMolecule(i)), msDistr));
+                    result.microspecies.add(Ms.of(
+                            Smiles.fromCxnMolecule(plugin.getMsMolecule(i)),
+                            Math.round(msDistr * 100.0) / 100.0)); // round distribution to two decimal points
                 }
             }
+
+            // sort microspecies in descending order by distributions
+            Collections.sort(result.microspecies, Collections.reverseOrder(Comparator.comparingDouble(m -> m.distribution)));
 
             return result;
         } catch (PluginException e) {

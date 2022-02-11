@@ -20,7 +20,7 @@ public class MsDistrResult {
 
         @Override
         public String toString() {
-            return ms + " [" + String.format("%.2f", distribution) + "]";
+            return ms + " [" + distribution + "]";
         }
     }
 }
