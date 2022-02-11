@@ -25,6 +25,11 @@ public class MsDistrCliParameters {
     public List<Double> ph = new ArrayList<>();
 
     @Parameter(
+            names = { "-tautomerize" },
+            description = "Consoder tautomerization and resonance.")
+    public boolean tautomerize = false;
+
+    @Parameter(
             names = { "-in" },
             required = true,
             description = "Input SMILES location. Gzipped input is recognized.")

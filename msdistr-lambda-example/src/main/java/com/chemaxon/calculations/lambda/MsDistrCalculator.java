@@ -39,7 +39,7 @@ public class MsDistrCalculator implements RequestHandler<MsDistrRequest, MsDistr
                 final double pH = request.pH.get(j);
 
                 // TODO: add logging - context.getLogger()
-                ret.results.add(calculateMsDistr(smiles, pH));
+                ret.results.add(calculateMsDistr(smiles, pH, request.tautomerize));
             }
         }
 
@@ -49,15 +49,17 @@ public class MsDistrCalculator implements RequestHandler<MsDistrRequest, MsDistr
     /**
      * Calculates the microspecies distribution of the molecule at the specified pH.
      */
-    private MsDistrResult calculateMsDistr(String smiles, final double pH) {
+    private MsDistrResult calculateMsDistr(String smiles, final double pH, final boolean tautomerize) {
         try {
             MsDistrResult result = new MsDistrResult();
             result.input = smiles;
             result.pH = pH;
+            result.tautomerize = tautomerize;
             result.microspecies = new ArrayList<>();
 
             pKaPlugin plugin = new pKaPlugin();
             plugin.setpH(pH);
+            plugin.setConsiderTautomerization(tautomerize);
             plugin.setMolecule(Smiles.asCxnMolecule(smiles));
             plugin.run();
 

@@ -6,6 +6,7 @@ public class MsDistrResult {
 
     public String input;
     public double pH;
+    public boolean tautomerize;
     public List<Ms> microspecies;
 
     public static class Ms {

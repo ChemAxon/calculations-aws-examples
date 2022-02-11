@@ -26,6 +26,7 @@ public class MsDistrCli {
                 "    output:         " + p.out,
                 "    JSONL output:   " + p.jsonlOut,
                 "    pH:             " + p.ph.toString(),
+                "    tautomerize:    " + p.tautomerize,
                 "    maxCount:       " + (p.maxCount == null ? "read all input" : p.maxCount),
                 "    writeTimes:     " + p.writeTimes);
 
@@ -50,7 +51,7 @@ public class MsDistrCli {
                 }
 
                 for (double pH : p.ph) {
-                    final MsDistrRequest req = MsDistrRequest.ofSingle(nextInLine, pH);
+                    final MsDistrRequest req = MsDistrRequest.ofSingle(nextInLine, pH, p.tautomerize);
 
                     final long startTime = System.currentTimeMillis();
                     final MsDistrResponse res = calc.handleRequest(req, null);

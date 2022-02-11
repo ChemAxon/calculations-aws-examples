@@ -80,13 +80,14 @@ As an example you can use the following test data from Lambda console:
 
 ``` json
 {
-  "smiles": [
-    "CC(=O)OC1=CC=CC=C1C(O)=O",
-    "CC(=O)NC1=CC=C(O)C=C1"
-  ],
-  "pH": [
-    7.4
-  ]
+    "smiles": [
+        "CC(=O)OC1=CC=CC=C1C(O)=O",
+        "CC(=O)NC1=CC=C(O)C=C1"
+    ],
+    "pH": [
+        7.4
+    ],
+    "tautomerize": false
 }
 ```
 
@@ -97,7 +98,7 @@ See <https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/i
 ``` bash
 aws lambda invoke \
    --function-name calc-msdistr-example \
-   --payload '{"smiles":["CC(=O)OC1=CC=CC=C1C(O)=O","CC(=O)NC1=CC=C(O)C=C1"],"pH":[7.4]}' \
+   --payload '{"smiles":["CC(=O)OC1=CC=CC=C1C(O)=O","CC(=O)NC1=CC=C(O)C=C1"],"pH":[7.4],"tautomerize":false}' \
    --cli-binary-format raw-in-base64-out \
    response.json
 
@@ -113,6 +114,8 @@ The response printed:
     "results": [
         {
             "input": "CC(=O)OC1=CC=CC=C1C(O)=O",
+            "pH": 7.4,
+            "tautomerize": false,
             "microspecies": [
                 {
                     "distribution": 0.01034556647539921,
@@ -122,11 +125,12 @@ The response printed:
                     "distribution": 99.98965443352152,
                     "ms": "CC(=O)Oc1ccccc1C([O-])=O"
                 }
-            ],
-            "pH": 7.4
+            ]
         },
         {
             "input": "CC(=O)NC1=CC=C(O)C=C1",
+            "pH": 7.4,
+            "tautomerize": false,
             "microspecies": [
                 {
                     "distribution": 99.14512041830184,
@@ -136,8 +140,7 @@ The response printed:
                     "distribution": 0.8548772059523501,
                     "ms": "CC(=O)Nc1ccc([O-])cc1"
                 }
-            ],
-            "pH": 7.4
+            ]
         }
     ]
 }

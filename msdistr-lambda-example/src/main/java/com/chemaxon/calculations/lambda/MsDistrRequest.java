@@ -21,13 +21,18 @@ public class MsDistrRequest {
     public List<Double> pH;
 
     /**
+     * Consider tautomerization and resonance.
+     */
+    public boolean tautomerize;
+
+    /**
      * Convenience factory for a single structure - pH pair.
      * 
      * @param smiles Input structure
      * @param pH pH to use
      * @return Created instance
      */
-    public static MsDistrRequest ofSingle(String smiles, double pH) {
+    public static MsDistrRequest ofSingle(String smiles, double pH, boolean tautomerize) {
         final MsDistrRequest ret = new MsDistrRequest();
         ret.pH = ImmutableList.of(pH);
         ret.smiles = ImmutableList.of(smiles);
