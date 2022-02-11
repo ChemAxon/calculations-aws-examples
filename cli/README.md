@@ -35,7 +35,7 @@ Launcher scripts will be generated into `cli/build/scripts`. Invocation examples
     -out out.txt \
     -jsonl-out out.jsonl
 
-/cli/build/scripts/run-majorms \
+/cli/build/scripts/run-msdistr \
     -in molecules.smi.gz \
     -write-times true \
     -out out.txt \
