@@ -110,34 +110,33 @@ The response printed:
 
 ``` json
 {
+    "pH": 7.4,
+    "tautomerize": false,
+    "temperature": 298,
     "results": [
         {
             "input": "CC(=O)OC1=CC=CC=C1C(O)=O",
-            "pH": 7.4,
-            "tautomerize": false,
             "microspecies": [
                 {
-                    "distribution": 0.01034556647539921,
-                    "ms": "CC(=O)Oc1ccccc1C(O)=O"
+                    "ms": "CC(=O)Oc1ccccc1C([O-])=O",
+                    "distribution": 99.99
                 },
                 {
-                    "distribution": 99.98965443352152,
-                    "ms": "CC(=O)Oc1ccccc1C([O-])=O"
+                    "ms": "CC(=O)Oc1ccccc1C(O)=O",
+                    "distribution": 0.01
                 }
             ]
         },
         {
             "input": "CC(=O)NC1=CC=C(O)C=C1",
-            "pH": 7.4,
-            "tautomerize": false,
             "microspecies": [
                 {
-                    "distribution": 99.14512041830184,
-                    "ms": "CC(=O)Nc1ccc(O)cc1"
+                    "ms": "CC(=O)Nc1ccc(O)cc1",
+                    "distribution": 99.15
                 },
                 {
-                    "distribution": 0.8548772059523501,
-                    "ms": "CC(=O)Nc1ccc([O-])cc1"
+                    "ms": "CC(=O)Nc1ccc([O-])cc1",
+                    "distribution": 0.85
                 }
             ]
         }
