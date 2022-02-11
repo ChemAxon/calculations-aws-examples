@@ -1,1 +1,1 @@
-include 'aws-examples-common', 'majorms-lambda-example', 'nmr-lambda-example', 'cli'
+include 'aws-examples-common', 'majorms-lambda-example', 'msdistr-lambda-example', 'nmr-lambda-example', 'cli'
