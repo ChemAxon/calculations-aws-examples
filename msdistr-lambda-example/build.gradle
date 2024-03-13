@@ -1,85 +1,73 @@
-// handle multiple environment for compilation/dependency resoulution, see
-// README.md in main project directory for details
-if (!project.hasProperty('cxnHubUser') && !project.hasProperty('cxnHubPass')) {
-    // Using Gluon (ChemAxon internal) environment for dependencies
-    apply plugin: 'cxn-gluon'
-    apply plugin: 'cxn-java'
-} else {
-    // Using ChemAxon public repository Hub (available for everyone) Hub or
-    // locally downloaded JChem jar
-    apply plugin: 'java'
+plugins {
+    id 'java-library'
 }
 
-sourceCompatibility = 1.8
+repositories {
+    maven {
+        url 'https://hub.chemaxon.com/artifactory/libs-release'
+        credentials {
+            username cxnHubUser
+            password cxnHubPassword
+        }
+    }
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 dependencies {
- 
-    
-    // Need transitive deps for cli
-    // See https://stackoverflow.com/questions/44493378/whats-the-difference-between-implementation-and-compile-in-gradle
-    
-    if (project.hasProperty('cxnHubUser') || project.hasProperty('cxnHubPass')) {
-        // ChemAxon proprietary and other dependencies fetched from Hub
-        implementation "com.chemaxon:calculations:${cxnHubReleaseVersion}"
+    api project(':aws-examples-common')
+    api 'org.apache.commons:commons-math3:3.5'
 
-    } else {
-        // ChemAxon proprietary and other dependencies fetched from ChemAxon internal (employee-only) repository
-        implementation "com.chemaxon:calculations:${cxnGluonDepsVersion}"
-    }
-
-    // the following dependencies are the same for all environments 
-    implementation project(':aws-examples-common')
-    implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
-    implementation 'org.apache.commons:commons-math3:3.5'
-    testImplementation "junit:junit:4.12"
-    testImplementation "org.hamcrest:hamcrest-all:1.3"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
 }
 
+tasks.named('test') {
+    useJUnitPlatform()
+}
 
 /**
  * Create AWS Lambda deployment package.
- * 
- *  - bake in ChemAxon license file when specified by property "cxnLicenseDir"
+ *
+ *  - bake in Chemaxon license file when specified by property "cxnLicenseDir"
  *  - include jars specified in "includes.txt" - see README.md in subproject root
  *  - include compiled classes in a jar
- * 
+ *
  * see https://docs.aws.amazon.com/lambda/latest/dg/java-package.html
  */
-task deploymentPackage(type: Zip) {
+tasks.register('deploymentPackage', Zip) {
     group = 'Build'
     description = 'Create AWS Lambda deployment package'
-    classifier = 'deployment-package'
-    //exclude 'annotations-2.0.1.jar'
-    
-    
-    // see https://stackoverflow.com/questions/20340688/reading-strings-from-a-file-and-putting-them-into-an-array-with-groovy
-    def includelist = new File("${rootProject.projectDir}/includes-msdistr.txt") as String[]
-    
-    
-    
-    // force the inclusion of jar built from this project (the actual lambda wrapper)
-    // note that jar file name depends on project version defined in gradle.properties so it might change
-    includelist = includelist.plus(jar.archiveName) as String[]
-    println '[task deploymentPackage] Will include: ' + includelist
-    
-    include includelist
-    
+    archiveClassifier = 'deployment-package'
+    dependsOn 'jar'
+    outputs.upToDateWhen { false }
+
+    def includeList = new File("${rootDir}/includes-msdistr.txt") as String[]
+
+    // Force the inclusion of the jar built from this project (the actual lambda wrapper).
+    includeList = includeList + jar.archiveFileName as String[]
+
+    println '[deploymentPackage] Will include: ' + includeList
+    include includeList
+
     if (project.hasProperty('cxnLicenseDir')) {
-        if (! new File("$cxnLicenseDir/license.cxl").exists()) {
-            ant.fail("File $cxnLicenseDir/license.cxl missing - try to use absolute pathname for the license directory");
+        if (!new File("${cxnLicenseDir}/license.cxl").exists()) {
+            ant.fail("File ${cxnLicenseDir}/license.cxl missing - try to use absolute pathname for the license directory");
         }
-        println '[task deploymentPackage] Will pack ChemAxon license file into the deployment package from $cxnLicenseDir/license.cxl'
-            
+        println '[deploymentPackage] Will pack Chemaxon license file into the deployment package from $cxnLicenseDir/license.cxl'
+
         into('chemaxon') {
             from new File("$cxnLicenseDir").getAbsolutePath()
             include "license.cxl"
         }
-        
     } else {
-        println '[task deploymentPackage] Use -PcxnLicenseDir=<DIR> to specify ChemAxon license file dir to be packed into the deployment package'
-        println '[task deploymentPackage] If license file is not packaged calculations can not be executed after deployment.'
+        println '[deploymentPackage] Use -PcxnLicenseDir=<DIR> to specify the directory that contains the Chemaxon license to be packed into the deployment package'
+        println '[deploymentPackage] If license file is not packaged, calculations cannot be executed after deployment.'
     }
-    
+
     into('lib') {
         from configurations.runtimeClasspath
         from jar

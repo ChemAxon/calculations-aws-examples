@@ -42,7 +42,7 @@ for index, d in enumerate(data["results"]):
         print("    {:2}        {:6.2f}".format(r["atomIndex"], r["shift"]))
 
 
-    print("");
+    print("")
 
 
     # create a simple spectrum from the 13C and 1H shifts

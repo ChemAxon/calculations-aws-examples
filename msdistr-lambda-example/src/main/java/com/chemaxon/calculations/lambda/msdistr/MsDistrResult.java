@@ -1,4 +1,4 @@
-package com.chemaxon.calculations.lambda;
+package com.chemaxon.calculations.lambda.msdistr;
 
 import java.util.List;
 
@@ -23,4 +23,5 @@ public class MsDistrResult {
             return ms + " [" + distribution + "]";
         }
     }
+
 }

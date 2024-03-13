@@ -1,7 +1,7 @@
 Process NMR results
 ===================
 
-This is a proof of concept lambda written in Python to process NMR calculation results. The main goal of this
+This is a proof-of-concept lambda written in Python to process NMR calculation results. The main goal of this
 exercise is to demonstrate the interoperability of lamdas using different platforms.
 
 Requirements
@@ -26,7 +26,7 @@ Follow script creation instructions of the [`cli`](../cli/README.md) subproject,
 
 
 ``` bash
-./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPass=<YOUR_HUB_API_KEY> :cli:createScripts
+./gradlew -PcxnHubUser=<YOUR_PASS_EMAIL> -PcxnHubPassword=<YOUR_HUB_API_KEY> :cli:createScripts
 ```
 
 then invoke
@@ -34,7 +34,6 @@ then invoke
 ``` bash
 ./cli/build/scripts/run-nmr \
     -in molecules.smi.gz \
-    -in-format smiles \
     -write-times true \
     -out /dev/null \
     -jsonl-out - \
@@ -50,7 +49,6 @@ using
 ```
 ./cli/build/scripts/run-nmr \
     -in molecules.smi.gz \
-    -in-format smiles \
     -write-times true \
     -out /dev/null \
     -jsonl-out - \
@@ -96,7 +94,7 @@ aws lambda delete-function \
 ### Test using `aws` CLI
 
 
-See `com.chemaxon.calculators.NmrResponse` for details on request format. 
+See `com.chemaxon.calculators.nmr.NmrResponse` for details on request format.
 See <https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/invoke.html> for details on lambda invocation from `aws` CLI.
 
 
@@ -104,7 +102,6 @@ See <https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/i
 # Generate test data
 ./cli/build/scripts/run-nmr \
     -in molecules.smi.gz \
-    -in-format smiles \
     -write-times true \
     -out /dev/null \
     -jsonl-out - \

@@ -1,4 +1,4 @@
-package com.chemaxon.calculations.lambda;
+package com.chemaxon.calculations.lambda.common;
 
 import java.io.IOException;
 

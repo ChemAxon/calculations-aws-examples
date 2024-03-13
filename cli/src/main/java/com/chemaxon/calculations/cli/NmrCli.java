@@ -1,20 +1,19 @@
 package com.chemaxon.calculations.cli;
 
-import com.chemaxon.calculations.common.ProgressObserver;
-import com.chemaxon.calculations.io.Segmenter;
-import com.chemaxon.calculations.lambda.MoleculeFormats;
-import com.chemaxon.calculations.lambda.NmrCalculator;
-import com.chemaxon.calculations.lambda.NmrRequest;
-import com.chemaxon.calculations.lambda.NmrResponse;
-import com.chemaxon.calculations.lambda.NmrResult;
-import com.chemaxon.calculations.util.CloseableLineIterator;
-import com.chemaxon.calculations.util.CmdlineUtils;
-import com.chemaxon.overlap.cli.invocation.CliInvocation;
-import com.chemaxon.overlap.cli.invocation.CliInvocationEnv;
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
+
+import com.beust.jcommander.JCommander;
+import com.google.gson.Gson;
+
+import com.chemaxon.calculations.lambda.common.MoleculeFormats;
+import com.chemaxon.calculations.lambda.nmr.NmrCalculator;
+import com.chemaxon.calculations.lambda.nmr.NmrRequest;
+import com.chemaxon.calculations.lambda.nmr.NmrResult;
 
 /**
  * Command line entry point.
@@ -22,13 +21,27 @@ import java.util.Iterator;
  * @author Gabor Imre
  */
 public class NmrCli {
-    
-    private static void launch(NmrCliParameters p, CliInvocationEnv env) throws Exception {
-        env.verboseSection(
+
+    public static void main(String[] args) throws IOException {
+        NmrCliParameters p = new NmrCliParameters();
+
+        JCommander jc = new JCommander(p);
+        try {
+            jc.parse(args);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            jc.usage();
+            return;
+        }
+        if (p.help) {
+            jc.usage();
+            return;
+        }
+
+        Util.verboseSection(
                 "NMR CLI launched.",
                 "",
                 "    input location: " + p.in,
-                "    input format:   " + p.inFormat,
                 "    output:         " + p.out,
                 "    SDF output:     " + p.sdfOut,
                 "    JSONL output:   " + p.jsonlOut,
@@ -36,91 +49,63 @@ public class NmrCli {
                 "    writeTimes:     " + p.writeTimes
         );
 
-        env.verbose(
-                "Command line arguments:",
-                "    " + env.getOriginalCliArguments().toString()
-        );
+        Util.verbose("Command line arguments: ", "    " + Arrays.toString(args));
 
-        
-        MoleculeFormats.ensureSupportedFormat(p.inFormat);
-        
-        final Segmenter inputSegmenter = MoleculeFormats.segmenterForFormat(p.inFormat);
-        final NmrCalculator calc = new NmrCalculator();
-
+        NmrCalculator calc = new NmrCalculator();
+        long globalStartTime = System.currentTimeMillis();
         try (
-            final ProgressObserver po = env.progressObserver("Importing from " + p.in);
-            final CloseableLineIterator inputLines = CmdlineUtils.lineIteratorFromLocation(p.in, true);
-            final PrintStream out = CmdlineUtils.printStreamFromLocation(p.out);
-            final PrintStream sdfOutOrNull = CmdlineUtils.printStreamFromNullableLocation(p.sdfOut).orNull();
-            final PrintStream jsonlOutOrNull = CmdlineUtils.printStreamFromNullableLocation(p.jsonlOut).orNull();
-        ) { 
-            final Iterator<String> inputStructureSources = inputSegmenter.plainStringSegments(inputLines);
-            
+                BufferedReader br = Util.openBufferedReader(p.in);
+                PrintStream out = p.out != null ? new PrintStream(p.out) : null;
+                PrintStream sdfOutOrNull = p.sdfOut != null ? new PrintStream(p.sdfOut) : null;
+                PrintStream jsonlOutOrNull = p.jsonlOut != null ? new PrintStream(p.jsonlOut) : null
+        ) {
             long readCount = 0;
-            while (inputStructureSources.hasNext() && (p.maxCount == null || readCount < p.maxCount)) {
-                final String nextInputStructureSource = inputStructureSources.next();
-                readCount ++;
-                
+            String nextInLine;
+            while ((nextInLine = br.readLine()) != null && (p.maxCount == null || readCount < p.maxCount)) {
+                readCount++;
+
                 if (p.verbose) {
-                    env.verbose("Structure # " + readCount + ": " + nextInputStructureSource);
+                    Util.verbose("Structure # " + readCount + ": " + nextInLine);
                 }
-                
-                final NmrRequest req = NmrRequest.ofSingle(nextInputStructureSource, p.inFormat);
-                final long startTime = System.currentTimeMillis();
-                final NmrResponse resp = calc.handleRequest(req, null);
-                final long time = System.currentTimeMillis() - startTime;
-                final NmrResult res = resp.results.get(0);
-                
+
+                NmrRequest req = NmrRequest.ofSingle(nextInLine, "smiles");
+
+                long startTime = System.currentTimeMillis();
+                NmrResult res = calc.handleRequest(req, null).results.get(0);
+                long time = System.currentTimeMillis() - startTime;
+
                 if (sdfOutOrNull != null) {
-                    sdfOutOrNull.println(res.toSdf(ImmutableMap.of(
-                        "nmr-calc-time", Long.toString(time)
-                    )));
+                    sdfOutOrNull.println(res.toSdf(Map.of("nmr-calc-time", Long.toString(time))));
                 }
-                
+
                 if (jsonlOutOrNull != null) {
-                    jsonlOutOrNull.println(
-                        new Gson().toJson(resp)
-                    );
+                    jsonlOutOrNull.println(new Gson().toJson(calc.handleRequest(req, null)));
                 }
-                    
-                final StringBuilder outLine = new StringBuilder();
+
+                StringBuilder outLine = new StringBuilder();
                 outLine
                         .append(readCount)
                         .append("\t")
                         .append(res.cnmrResult.size())
                         .append("\t")
-                        .append(res.hnmrResult.size())
-                        ;                    
-                
+                        .append(res.hnmrResult.size());
+
                 if (p.writeTimes) {
                     outLine.append("\t").append(time);
                 }
-                out.println(outLine.toString());
-                            
-                    
-                po.worked(1);
-                
-                
+                if (out != null) {
+                    out.println(outLine);
+                } else {
+                    System.out.println(outLine);
+                }
             }
-        } 
+        }
 
-        
-        
-        env.verboseSection(
+        Util.verboseSection(
                 "All done.",
                 "",
-                "Total execution time: " + env.getRunningTimeInHumanReadable()
+                "Total execution time: " + Util.timeToHumanReadable(System.currentTimeMillis() - globalStartTime)
         );
-       
     }
-    
-    
-    
-    public static void main(String [] args) {
-        CliInvocation
-                .parseParameters(args, NmrCliParameters.class)
-                .usage(NmrCliParameters::getCliHelp)
-                .launch(NmrCli::launch);
-                
-    }
+
 }

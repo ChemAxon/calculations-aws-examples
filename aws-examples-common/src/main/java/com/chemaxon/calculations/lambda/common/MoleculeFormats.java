@@ -1,13 +1,12 @@
-package com.chemaxon.calculations.lambda;
+package com.chemaxon.calculations.lambda.common;
+
+import java.io.IOException;
+import java.util.function.Supplier;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.formats.MolFormatException;
 import chemaxon.formats.MolImporter;
 import chemaxon.struc.Molecule;
-import com.chemaxon.calculations.io.Segmenter;
-import com.chemaxon.calculations.io.Segmenters;
-import java.io.IOException;
-import java.util.function.Supplier;
 
 /**
  * Utility class for conversion between MOL/SMILES format and ChemAxon's structure representation.
@@ -21,23 +20,12 @@ public final class MoleculeFormats {
         // Hide constructor.
     }
 
-    public static String getSupportedFormatsListAsHumanReadable() {
-        return "\"smiles\", \"sdf\" or \"mol\"";
-    }
-    
     public static void ensureSupportedFormat(String format) {
         if (format == null || format.isEmpty()) {
-            throw new IllegalArgumentException("No format specified, use " + getSupportedFormatsListAsHumanReadable());
+            throw new IllegalArgumentException("No format specified, use \"smiles\", \"sdf\" or \"mol\"");
         }
-                
     }
-    
-    public static Segmenter segmenterForFormat(String format) {
-        ensureSupportedFormat(format);
-        return Segmenters.ofFormat(format);
-    }
-    
-    
+
     /**
      * Construct a {@link Molecule} object from the specified MOL record.
      *
@@ -62,7 +50,7 @@ public final class MoleculeFormats {
             throw new IllegalArgumentException("Error importing " + molDesc.get(), e);
         }
     }
-    
+
     /**
      * Construct a {@link Molecule} object from the specified MOL record.
      *

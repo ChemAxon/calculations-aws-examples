@@ -1,15 +1,15 @@
-package com.chemaxon.calculations.lambda;
+package com.chemaxon.calculations.lambda.msdistr;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
-import org.apache.commons.math3.util.Precision;
+import java.util.Objects;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.chemaxon.calculations.lambda.MsDistrResult.Ms;
-import com.google.common.base.Preconditions;
+
+import com.chemaxon.calculations.lambda.msdistr.MsDistrResult.Ms;
+import com.chemaxon.calculations.lambda.common.Smiles;
 
 import chemaxon.marvin.calculations.pKaPlugin;
 import chemaxon.marvin.plugin.PluginException;
@@ -17,27 +17,26 @@ import chemaxon.marvin.plugin.PluginException;
 /**
  * A very simple {@link RequestHandler} implementation which calculates the microspecies distribution of the input
  * structure.
- * 
+ *
  * @author Laszlo Antal
  */
 public class MsDistrCalculator implements RequestHandler<MsDistrRequest, MsDistrResponse> {
 
     @Override
     public MsDistrResponse handleRequest(MsDistrRequest request, Context context) {
-
-        Preconditions.checkNotNull(request);
+        Objects.requireNonNull(request);
         if (request.smiles == null || request.smiles.isEmpty()) {
             throw new IllegalArgumentException("No input structure specified");
         }
 
-        final MsDistrResponse ret = new MsDistrResponse();
+        MsDistrResponse ret = new MsDistrResponse();
         ret.pH = request.pH;
         ret.tautomerize = request.tautomerize;
         ret.temperature = request.temperature;
         ret.results = new ArrayList<>();
 
         for (int i = 0; i < request.smiles.size(); i++) {
-            final String smiles = request.smiles.get(i);
+            String smiles = request.smiles.get(i);
 
             // TODO: add logging - context.getLogger()
             ret.results.add(calculateMsDistr(smiles, request.pH, request.tautomerize, request.temperature));
@@ -72,7 +71,7 @@ public class MsDistrCalculator implements RequestHandler<MsDistrRequest, MsDistr
             }
 
             // sort microspecies in descending order by distributions
-            Collections.sort(result.microspecies, Collections.reverseOrder(Comparator.comparingDouble(m -> m.distribution)));
+            result.microspecies.sort(Collections.reverseOrder(Comparator.comparingDouble(m -> m.distribution)));
 
             return result;
         } catch (PluginException e) {
@@ -80,4 +79,5 @@ public class MsDistrCalculator implements RequestHandler<MsDistrRequest, MsDistr
                     "Calculation failed for molecule: " + smiles + ", pH: " + pH, e);
         }
     }
+
 }

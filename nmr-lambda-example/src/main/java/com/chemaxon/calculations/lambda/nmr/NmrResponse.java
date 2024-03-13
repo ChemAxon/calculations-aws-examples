@@ -1,4 +1,4 @@
-package com.chemaxon.calculations.lambda;
+package com.chemaxon.calculations.lambda.nmr;
 
 import java.util.List;
 
@@ -9,10 +9,10 @@ import java.util.List;
  * @author Gabor Imre
  */
 public class NmrResponse {
-    
+
     /**
      * Results for input structures.
      */
     public List<NmrResult> results;
-    
+
 }

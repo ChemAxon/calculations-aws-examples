@@ -1,11 +1,10 @@
-package com.chemaxon.calculations.lambda;
+package com.chemaxon.calculations.lambda.msdistr;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 /**
  * Stores input data for the {@link MsDistrCalculator}.
- * 
+ *
  * @author Laszlo Antal
  */
 public class MsDistrRequest {
@@ -32,7 +31,7 @@ public class MsDistrRequest {
 
     /**
      * Convenience factory for a single structure - pH pair.
-     * 
+     *
      * @param smiles Input structure
      * @param pH pH to use
      * @param tautomerize consider tautomerization/resonance
@@ -40,11 +39,12 @@ public class MsDistrRequest {
      * @return Created instance
      */
     public static MsDistrRequest ofSingle(String smiles, double pH, boolean tautomerize, double temperature) {
-        final MsDistrRequest ret = new MsDistrRequest();
+        MsDistrRequest ret = new MsDistrRequest();
         ret.pH = pH;
         ret.tautomerize = tautomerize;
         ret.temperature = temperature;
-        ret.smiles = ImmutableList.of(smiles);
+        ret.smiles = List.of(smiles);
         return ret;
     }
+
 }

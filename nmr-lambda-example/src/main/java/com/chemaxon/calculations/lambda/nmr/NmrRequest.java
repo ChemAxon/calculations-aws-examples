@@ -1,7 +1,8 @@
-package com.chemaxon.calculations.lambda;
+package com.chemaxon.calculations.lambda.nmr;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
+
+import com.chemaxon.calculations.lambda.common.MoleculeFormats;
 
 /**
  * Stores input data for the {@link NmrCalculator}.
@@ -13,14 +14,14 @@ public class NmrRequest {
 
     /**
      * Input structures.
-     * 
+     * <p>
      * Format must match to the value of {@link #format}.
      */
     public List<String> structureSources;
 
     /**
-     * File format of input structures. 
-     * 
+     * File format of input structures.
+     * <p>
      * Only {@code smiles}, {@code mol} and {@code sdf} are supported.
      */
     public String format;
@@ -28,9 +29,9 @@ public class NmrRequest {
     /**
      * Constructs a request from the specified source.
      *
-     * @param structureSource  Input structure source
-     * @param format Input structure format, currently {@code smiles}, {@code sdf} and {@code mol} are supported.
-     * 
+     * @param structureSource Input structure source
+     * @param format Input structure format, currently {@code smiles}, {@code sdf} and {@code mol} are
+     *         supported.
      * @return Created instance
      */
     public static NmrRequest ofSingle(String structureSource, String format) {
@@ -38,10 +39,11 @@ public class NmrRequest {
             throw new IllegalArgumentException("No structure source specified.");
         }
         MoleculeFormats.ensureSupportedFormat(format);
-        
-        final NmrRequest ret = new NmrRequest();
-        ret.structureSources = ImmutableList.of(structureSource);
+
+        NmrRequest ret = new NmrRequest();
+        ret.structureSources = List.of(structureSource);
         ret.format = format;
         return ret;
     }
+
 }

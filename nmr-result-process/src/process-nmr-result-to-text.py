@@ -40,7 +40,7 @@ def response_to_text_lines(data):
             ret.append("    {:2}        {:6.2f}      {:6.2f}".format(r["atomIndex"], r["shift"], r["shiftError"]))
 
 
-        ret.append("");
+        ret.append("")
     
     
     return ret

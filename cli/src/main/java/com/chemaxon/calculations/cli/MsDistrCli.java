@@ -1,15 +1,16 @@
 package com.chemaxon.calculations.cli;
 
-import com.chemaxon.calculations.common.ProgressObserver;
-import com.chemaxon.calculations.lambda.MsDistrCalculator;
-import com.chemaxon.calculations.lambda.MsDistrRequest;
-import com.chemaxon.calculations.lambda.MsDistrResponse;
-import com.chemaxon.calculations.util.CloseableLineIterator;
-import com.chemaxon.calculations.util.CmdlineUtils;
-import com.chemaxon.overlap.cli.invocation.CliInvocation;
-import com.chemaxon.overlap.cli.invocation.CliInvocationEnv;
-import com.google.gson.Gson;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
+
+import com.beust.jcommander.JCommander;
+import com.google.gson.Gson;
+
+import com.chemaxon.calculations.lambda.msdistr.MsDistrCalculator;
+import com.chemaxon.calculations.lambda.msdistr.MsDistrRequest;
+import com.chemaxon.calculations.lambda.msdistr.MsDistrResponse;
 
 /**
  * Command line entry point.
@@ -19,8 +20,23 @@ import java.io.PrintStream;
  */
 public class MsDistrCli {
 
-    private static void launch(MsDistrCliParameters p, CliInvocationEnv env) throws Exception {
-        env.verboseSection(
+    public static void main(String[] args) throws IOException {
+        MsDistrCliParameters p = new MsDistrCliParameters();
+
+        JCommander jc = new JCommander(p);
+        try {
+            jc.parse(args);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            jc.usage();
+            return;
+        }
+        if (p.help) {
+            jc.usage();
+            return;
+        }
+
+        Util.verboseSection(
                 "MsDistr CLI launched.",
                 "",
                 "    input location: " + p.in,
@@ -30,41 +46,38 @@ public class MsDistrCli {
                 "    tautomerize:    " + p.tautomerize,
                 "    temperature:    " + p.temperature,
                 "    maxCount:       " + (p.maxCount == null ? "read all input" : p.maxCount),
-                "    writeTimes:     " + p.writeTimes);
+                "    writeTimes:     " + p.writeTimes
+        );
 
-        env.verbose(
-                "Command line arguments:",
-                "    " + env.getOriginalCliArguments().toString());
+        Util.verbose("Command line arguments: ", "    " + Arrays.toString(args));
 
-        final MsDistrCalculator calc = new MsDistrCalculator();
-
+        MsDistrCalculator calc = new MsDistrCalculator();
+        long globalStartTime = System.currentTimeMillis();
         try (
-                final ProgressObserver po = env.progressObserver("Importing from " + p.in);
-                final CloseableLineIterator inputLines = CmdlineUtils.lineIteratorFromLocation(p.in, true);
-                final PrintStream out = CmdlineUtils.printStreamFromLocation(p.out);
-                final PrintStream jsonlOutOrNull = CmdlineUtils.printStreamFromNullableLocation(p.jsonlOut).orNull();) {
-
+                BufferedReader br = Util.openBufferedReader(p.in);
+                PrintStream out = p.out != null ? new PrintStream(p.out) : null;
+                PrintStream jsonlOutOrNull = p.jsonlOut != null ? new PrintStream(p.jsonlOut) : null
+        ) {
             long readCount = 0;
-            while (inputLines.hasNext() && (p.maxCount == null || readCount < p.maxCount)) {
-                final String nextInLine = inputLines.next();
+            String nextInLine;
+            while ((nextInLine = br.readLine()) != null && (p.maxCount == null || readCount < p.maxCount)) {
                 readCount++;
 
                 if (p.verbose) {
-                    env.verbose("Structure # " + readCount + ": " + nextInLine);
+                    Util.verbose("Structure # " + readCount + ": " + nextInLine);
                 }
 
-                final MsDistrRequest req = MsDistrRequest.ofSingle(nextInLine, p.ph, p.tautomerize, p.temperature);
+                MsDistrRequest req = MsDistrRequest.ofSingle(nextInLine, p.ph, p.tautomerize, p.temperature);
 
-                final long startTime = System.currentTimeMillis();
-                final MsDistrResponse res = calc.handleRequest(req, null);
-                final long time = System.currentTimeMillis() - startTime;
+                long startTime = System.currentTimeMillis();
+                MsDistrResponse res = calc.handleRequest(req, null);
+                long time = System.currentTimeMillis() - startTime;
 
                 if (jsonlOutOrNull != null) {
-                    jsonlOutOrNull.println(
-                            new Gson().toJson(res));
+                    jsonlOutOrNull.println(new Gson().toJson(res));
                 }
 
-                final StringBuilder outLine = new StringBuilder();
+                StringBuilder outLine = new StringBuilder();
                 outLine
                         .append(nextInLine)
                         .append("\t")
@@ -73,25 +86,20 @@ public class MsDistrCli {
                 if (p.writeTimes) {
                     outLine.append("\t").append(time);
                 }
-                out.println(outLine.toString());
-
-                po.worked(1);
-
+                if (out != null) {
+                    out.println(outLine);
+                } else {
+                    System.out.println(outLine);
+                }
             }
         }
 
-        env.verboseSection(
+        Util.verboseSection(
                 "All done.",
                 "",
-                "Total execution time: " + env.getRunningTimeInHumanReadable());
+                "Total execution time: " + Util.timeToHumanReadable(System.currentTimeMillis() - globalStartTime)
+        );
 
     }
 
-    public static void main(String[] args) {
-        CliInvocation
-                .parseParameters(args, MsDistrCliParameters.class)
-                .usage(MsDistrCliParameters::getCliHelp)
-                .launch(MsDistrCli::launch);
-
-    }
 }

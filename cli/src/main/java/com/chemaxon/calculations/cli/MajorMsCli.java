@@ -1,15 +1,16 @@
 package com.chemaxon.calculations.cli;
 
-import com.chemaxon.calculations.common.ProgressObserver;
-import com.chemaxon.calculations.lambda.MajorMsCalculator;
-import com.chemaxon.calculations.lambda.MajorMsRequest;
-import com.chemaxon.calculations.lambda.MajorMsResponse;
-import com.chemaxon.calculations.util.CloseableLineIterator;
-import com.chemaxon.calculations.util.CmdlineUtils;
-import com.chemaxon.overlap.cli.invocation.CliInvocation;
-import com.chemaxon.overlap.cli.invocation.CliInvocationEnv;
-import com.google.gson.Gson;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
+
+import com.beust.jcommander.JCommander;
+import com.google.gson.Gson;
+
+import com.chemaxon.calculations.lambda.majorms.MajorMsCalculator;
+import com.chemaxon.calculations.lambda.majorms.MajorMsRequest;
+import com.chemaxon.calculations.lambda.majorms.MajorMsResponse;
 
 /**
  * Command line entry point.
@@ -17,9 +18,24 @@ import java.io.PrintStream;
  * @author Gabor Imre
  */
 public class MajorMsCli {
-    
-    private static void launch(MajorMsCliParameters p, CliInvocationEnv env) throws Exception {
-        env.verboseSection(
+
+    public static void main(String[] args) throws IOException {
+        MajorMsCliParameters p = new MajorMsCliParameters();
+
+        JCommander jc = new JCommander(p);
+        try {
+            jc.parse(args);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            jc.usage();
+            return;
+        }
+        if (p.help) {
+            jc.usage();
+            return;
+        }
+
+        Util.verboseSection(
                 "MajorMS CLI launched.",
                 "",
                 "    input location: " + p.in,
@@ -30,80 +46,60 @@ public class MajorMsCli {
                 "    writeTimes:     " + p.writeTimes
         );
 
-        env.verbose(
-                "Command line arguments:",
-                "    " + env.getOriginalCliArguments().toString()
-        );
+        Util.verbose("Command line arguments: ", "    " + Arrays.toString(args));
 
-        
-        final MajorMsCalculator calc = new MajorMsCalculator();
-
+        MajorMsCalculator calc = new MajorMsCalculator();
+        long globalStartTime = System.currentTimeMillis();
         try (
-            final ProgressObserver po = env.progressObserver("Importing from " + p.in);
-            final CloseableLineIterator inputLines = CmdlineUtils.lineIteratorFromLocation(p.in, true);
-            final PrintStream out = CmdlineUtils.printStreamFromLocation(p.out);
-            final PrintStream jsonlOutOrNull = CmdlineUtils.printStreamFromNullableLocation(p.jsonlOut).orNull();
-        ) { 
-            long readCount = 0;
-            while (inputLines.hasNext() && (p.maxCount == null || readCount < p.maxCount)) {
-                final String nextInLine = inputLines.next();
-                readCount ++;
-                
+                BufferedReader br = Util.openBufferedReader(p.in);
+                PrintStream out = p.out != null ? new PrintStream(p.out) : null;
+                PrintStream jsonlOutOrNull = p.jsonlOut != null ? new PrintStream(p.jsonlOut) : null
+        ) {
+            int readCount = 0;
+            String nextInLine;
+            while ((nextInLine = br.readLine()) != null && (p.maxCount == null || readCount < p.maxCount)) {
+                readCount++;
+
                 if (p.verbose) {
-                    env.verbose("Structure # " + readCount + ": " + nextInLine);
+                    Util.verbose("Structure # " + readCount + ": " + nextInLine);
                 }
-                
+
                 for (double pH : p.ph) {
-                    final MajorMsRequest req = MajorMsRequest.ofSingle(nextInLine, pH);
-                
-                    final long startTime = System.currentTimeMillis();
-                    final MajorMsResponse res = calc.handleRequest(req, null);
-                    final long time = System.currentTimeMillis() - startTime;
-                    
-                    
+                    MajorMsRequest req = MajorMsRequest.ofSingle(nextInLine, pH);
+
+                    long startTime = System.currentTimeMillis();
+                    MajorMsResponse res = calc.handleRequest(req, null);
+                    long time = System.currentTimeMillis() - startTime;
+
                     if (jsonlOutOrNull != null) {
-                        jsonlOutOrNull.println(
-                            new Gson().toJson(res)
-                        );
+                        jsonlOutOrNull.println(new Gson().toJson(res));
                     }
-                    
-                    final StringBuilder outLine = new StringBuilder();
+
+                    StringBuilder outLine = new StringBuilder();
                     outLine
                             .append(nextInLine)
                             .append("\t")
                             .append(res.resultSmiles.get(0))
                             .append("\t")
                             .append(pH);
-                    
+
                     if (p.writeTimes) {
                         outLine.append("\t").append(time);
                     }
-                    out.println(outLine.toString());
-                            
-                    
-                    po.worked(1);
+                    if (out != null) {
+                        out.println(outLine);
+                    } else {
+                        System.out.println(outLine);
+                    }
                 }
-                
             }
-        } 
+        }
 
-        
-        
-        env.verboseSection(
+        Util.verboseSection(
                 "All done.",
                 "",
-                "Total execution time: " + env.getRunningTimeInHumanReadable()
+                "Total execution time: " + Util.timeToHumanReadable(System.currentTimeMillis() - globalStartTime)
         );
-       
     }
-    
-    
-    
-    public static void main(String [] args) {
-        CliInvocation
-                .parseParameters(args, MajorMsCliParameters.class)
-                .usage(MajorMsCliParameters::getCliHelp)
-                .launch(MajorMsCli::launch);
-                
-    }
+
 }

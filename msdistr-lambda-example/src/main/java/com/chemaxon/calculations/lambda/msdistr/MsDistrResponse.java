@@ -1,10 +1,10 @@
-package com.chemaxon.calculations.lambda;
+package com.chemaxon.calculations.lambda.msdistr;
 
 import java.util.List;
 
 /**
  * Calculation result for all inputs on all values.
- * 
+ *
  * @author Laszlo Antal
  */
 public class MsDistrResponse {
